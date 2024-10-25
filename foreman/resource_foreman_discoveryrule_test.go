@@ -1,268 +1,264 @@
 package foreman
 
 import (
-	"context"
+	"encoding/json"
+	"math/rand"
+	"net/http"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	tfrand "github.com/HanseMerkur/terraform-provider-utils/rand"
 	"github.com/terraform-coop/terraform-provider-foreman/foreman/api"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func Test_resourceForemanDiscoveryRule(t *testing.T) {
-	tests := []struct {
-		name string
-		want *schema.Resource
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceForemanDiscoveryRule(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceForemanDiscoveryRule() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+// -----------------------------------------------------------------------------
+// Test Helper Functions
+// -----------------------------------------------------------------------------
+
+const DiscoveryRuleURI = api.FOREMAN_API_URL_PREFIX + "/discovery_rules"
+const DiscoveryRuleTestDataPath = "testdata/3.11/discovery_rules"
+
+// Given a ForemanDiscoveryRule, create a mock instance state reference
+func ForemanDiscoveryRuleToInstanceState(obj api.ForemanDiscoveryRule) *terraform.InstanceState {
+	state := terraform.InstanceState{}
+	state.ID = strconv.Itoa(obj.Id)
+	// Build the attribute map from ForemanDiscoveryRule
+	attr := map[string]string{}
+	attr["name"] = obj.Name
+	attr["search"] = obj.Search
+	attr["hostgroup_id"] = strconv.Itoa(obj.Id)
+	attr["hostname"] = obj.Hostname
+	attr["max_count"] = strconv.Itoa(obj.HostLimitMaxCount)
+	attr["priority"] = strconv.Itoa(obj.Priority)
+	attr["enabled"] = strconv.FormatBool(obj.Enabled)
+	attr["location_ids"] = intSliceToString(obj.LocationIds)
+	attr["organization_ids"] = intSliceToString(obj.OrganizationIds)
+	state.Attributes = attr
+	return &state
 }
 
-func Test_buildForemanDiscoveryRule(t *testing.T) {
-	type args struct {
-		d *schema.ResourceData
+// Converts a slice of integers to a comma-separated string
+func intSliceToString(slice []int) string {
+	strSlice := make([]string, len(slice))
+	for i, v := range slice {
+		strSlice[i] = strconv.Itoa(v)
 	}
-	tests := []struct {
-		name string
-		args args
-		want *api.ForemanDiscoveryRule
-	}{
+	return strings.Join(strSlice, ",")
+}
+
+// Given a mock instance state for a ForemanDiscoveryRule resource, create a
+// mock ResourceData reference.
+func MockForemanDiscoveryRuleResourceData(s *terraform.InstanceState) *schema.ResourceData {
+	r := resourceForemanDiscoveryRule()
+	return r.Data(s)
+}
+
+// Reads the JSON for the file at the path and creates a discovery rule
+// ResourceData reference
+func MockForemanDiscoveryRuleResourceDataFromFile(t *testing.T, path string) *schema.ResourceData {
+	var obj api.ForemanDiscoveryRule
+	ParseJSONFile(t, path, &obj)
+	s := ForemanDiscoveryRuleToInstanceState(obj)
+	return MockForemanDiscoveryRuleResourceData(s)
+}
+
+// Creates a random ForemanDiscoveryRule struct
+func RandForemanDiscoveryRule() api.ForemanDiscoveryRule {
+	obj := api.ForemanDiscoveryRule{}
+
+	fo := RandForemanObject()
+	obj.ForemanObject = fo
+
+	obj.Name = tfrand.String(20, tfrand.Lower+".")
+
+	return obj
+}
+
+// Compares two ResourceData references for a ForemanDiscoveryRule resource.
+// If the two references differ in their attributes, the test will raise
+// a fatal.
+func ForemanDiscoveryRuleResourceDataCompare(t *testing.T, r1 *schema.ResourceData, r2 *schema.ResourceData) {
+
+	// compare IDs
+	if r1.Id() != r2.Id() {
+		t.Fatalf(
+			"ResourceData references differ in Id. [%s], [%s]",
+			r1.Id(),
+			r2.Id(),
+		)
+	}
+
+	// build the attribute map
+	m := map[string]schema.ValueType{}
+	r := resourceForemanDiscoveryRule()
+	for key, value := range r.Schema {
+		m[key] = value.Type
+	}
+
+	// compare the rest of the attributes
+	CompareResourceDataAttributes(t, m, r1, r2)
+
+}
+
+// -----------------------------------------------------------------------------
+// UnmarshalJSON
+// -----------------------------------------------------------------------------
+
+// Ensures the JSON unmarshal correctly sets the base attributes from
+// ForemanObject
+func TestDiscoveryRuleUnmarshalJSON_ForemanObject(t *testing.T) {
+
+	randObj := RandForemanObject()
+	randObjBytes, _ := json.Marshal(randObj)
+
+	var obj api.ForemanDiscoveryRule
+	jsonDecErr := json.Unmarshal(randObjBytes, &obj)
+	if jsonDecErr != nil {
+		t.Errorf(
+			"ForemanDiscoveryRule UnmarshalJSON could not decode base ForemanObject. "+
+				"Expected [nil] got [error]. Error value: [%s]",
+			jsonDecErr,
+		)
+	}
+
+	if !reflect.DeepEqual(obj.ForemanObject, randObj) {
+		t.Errorf(
+			"ForemanDiscoveryRule UnmarshalJSON did not properly decode base "+
+				"ForemanObject properties. Expected [%+v], got [%+v]",
+			randObj,
+			obj.ForemanObject,
+		)
+	}
+
+}
+
+// -----------------------------------------------------------------------------
+// setResourceDataFromForemanDiscoveryRule
+// -----------------------------------------------------------------------------
+
+// Ensures the ResourceData's attributes are correctly being set
+func TestSetResourceDataFromForemanDiscoveryRule_Value(t *testing.T) {
+
+	expectedObj := RandForemanDiscoveryRule()
+	expectedState := ForemanDiscoveryRuleToInstanceState(expectedObj)
+	expectedResourceData := MockForemanDiscoveryRuleResourceData(expectedState)
+
+	actualObj := api.ForemanDiscoveryRule{}
+	actualState := ForemanDiscoveryRuleToInstanceState(actualObj)
+	actualResourceData := MockForemanDiscoveryRuleResourceData(actualState)
+
+	setResourceDataFromForemanDiscoveryRule(actualResourceData, &expectedObj)
+
+	ForemanDiscoveryRuleResourceDataCompare(t, actualResourceData, expectedResourceData)
+
+}
+
+// ----------------------------------------------------------------------------
+// Test Cases for the Unit Test Framework
+// ----------------------------------------------------------------------------
+
+// SEE: foreman_api_test.go#TestCRUDFunction_CorrectURLAndMethod()
+func ResourceForemanDiscoveryRuleCorrectURLAndMethodTestCases(t *testing.T) []TestCaseCorrectURLAndMethod {
+
+	obj := api.ForemanDiscoveryRule{}
+	obj.Id = rand.Intn(100)
+	s := ForemanDiscoveryRuleToInstanceState(obj)
+	discovery_rulesURIById := DiscoveryRuleURI + "/" + strconv.Itoa(obj.Id)
+
+	return []TestCaseCorrectURLAndMethod{
 		{
-			name: "Basic Test",
-			args: args{d: schema.TestResourceDataRaw(t, resourceForemanDiscoveryRule().Schema, map[string]interface{}{
-				"name":             "test-rule",
-				"search":           "name ~ test",
-				"hostgroup_ids":    1,
-				"hostname":         "test-host",
-				"max_count":        10,
-				"priority":         1,
-				"enabled":          true,
-				"location_ids":     []interface{}{1, 2},
-				"organization_ids": []interface{}{1, 2},
-			})},
-			want: &api.ForemanDiscoveryRule{
-				Name:              "test-rule",
-				Search:            "name ~ test",
-				HostGroupId:       1,
-				Hostname:          "test-host",
-				HostLimitMaxCount: 10,
-				Priority:          1,
-				Enabled:           true,
-				LocationIds:       []int{1, 2},
-				OrganizationIds:   []int{1, 2},
+			TestCase: TestCase{
+				funcName:     "resourceForemanDiscoveryRuleRead",
+				crudFunc:     resourceForemanDiscoveryRuleRead,
+				resourceData: MockForemanDiscoveryRuleResourceData(s),
 			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := buildForemanDiscoveryRule(tt.args.d); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("buildForemanDiscoveryRule() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_setResourceDataFromForemanDiscoveryRule(t *testing.T) {
-	type args struct {
-		d  *schema.ResourceData
-		fh *api.ForemanDiscoveryRule
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "Basic Test",
-			args: args{
-				d: schema.TestResourceDataRaw(t, resourceForemanDiscoveryRule().Schema, map[string]interface{}{}),
-				fh: &api.ForemanDiscoveryRule{
-					Name:              "test-rule",
-					Search:            "name ~ test",
-					HostGroupId:       1,
-					Hostname:          "test-host",
-					HostLimitMaxCount: 10,
-					Priority:          1,
-					Enabled:           true,
-					LocationIds:       []int{1, 2},
-					OrganizationIds:   []int{1, 2},
+			expectedURIs: []ExpectedUri{
+				{
+					expectedURI:    discovery_rulesURIById,
+					expectedMethod: http.MethodGet,
 				},
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			setResourceDataFromForemanDiscoveryRule(tt.args.d, tt.args.fh)
-			if got := tt.args.d.Get("name"); got != tt.args.fh.Name {
-				t.Errorf("name = %v, want %v", got, tt.args.fh.Name)
-			}
-		})
+
+}
+
+// SEE: foreman_api_test.go#TestCRUDFunction_RequestDataEmpty()
+func ResourceForemanDiscoveryRuleRequestDataEmptyTestCases(t *testing.T) []TestCase {
+
+	obj := api.ForemanDiscoveryRule{}
+	obj.Id = rand.Intn(100)
+	s := ForemanDiscoveryRuleToInstanceState(obj)
+
+	return []TestCase{
+		{
+			funcName:     "resourceForemanDiscoveryRuleRead",
+			crudFunc:     resourceForemanDiscoveryRuleRead,
+			resourceData: MockForemanDiscoveryRuleResourceData(s),
+		},
 	}
 }
 
-func Test_resourceForemanDiscoveryRuleCreate(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		d    *schema.ResourceData
-		meta interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want diag.Diagnostics
-	}{
+// SEE: foreman_api_test.go#TestCRUDFunction_StatusCodeError()
+func ResourceForemanDiscoveryRuleStatusCodeTestCases(t *testing.T) []TestCase {
+
+	obj := api.ForemanDiscoveryRule{}
+	obj.Id = rand.Intn(100)
+	s := ForemanDiscoveryRuleToInstanceState(obj)
+
+	return []TestCase{
 		{
-			name: "Basic Test",
-			args: args{
-				ctx: context.TODO(),
-				d: schema.TestResourceDataRaw(t, resourceForemanDiscoveryRule().Schema, map[string]interface{}{
-					"name":             "test-rule",
-					"search":           "name ~ test",
-					"hostgroup_ids":    1,
-					"hostname":         "test-host",
-					"max_count":        10,
-					"priority":         1,
-					"enabled":          true,
-					"location_ids":     []int{1, 2},
-					"organization_ids": []int{1, 2},
-				}),
-				meta: &api.Client{},
-			},
-			want: nil,
+			funcName:     "resourceForemanDiscoveryRuleRead",
+			crudFunc:     resourceForemanDiscoveryRuleRead,
+			resourceData: MockForemanDiscoveryRuleResourceData(s),
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceForemanDiscoveryRuleCreate(tt.args.ctx, tt.args.d, tt.args.meta); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceForemanDiscoveryRuleCreate() = %v, want %v", got, tt.want)
-			}
-		})
 	}
 }
 
-func Test_resourceForemanDiscoveryRuleRead(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		d    *schema.ResourceData
-		meta interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want diag.Diagnostics
-	}{
+// SEE: foreman_api_test.go#TestCRUDFunction_EmptyResponseError()
+func ResourceForemanDiscoveryRuleEmptyResponseTestCases(t *testing.T) []TestCase {
+	obj := api.ForemanDiscoveryRule{}
+	obj.Id = rand.Intn(100)
+	s := ForemanDiscoveryRuleToInstanceState(obj)
+
+	return []TestCase{
 		{
-			name: "Basic Test",
-			args: args{
-				ctx: context.TODO(),
-				d: schema.TestResourceDataRaw(t, resourceForemanDiscoveryRule().Schema, map[string]interface{}{
-					"name":             "test-rule",
-					"search":           "name ~ test",
-					"hostgroup_ids":    1,
-					"hostname":         "test-host",
-					"max_count":        10,
-					"priority":         1,
-					"enabled":          true,
-					"location_ids":     []int{1, 2},
-					"organization_ids": []int{1, 2},
-				}),
-				meta: &api.Client{},
-			},
-			want: nil,
+			funcName:     "resourceForemanDiscoveryRuleRead",
+			crudFunc:     resourceForemanDiscoveryRuleRead,
+			resourceData: MockForemanDiscoveryRuleResourceData(s),
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceForemanDiscoveryRuleRead(tt.args.ctx, tt.args.d, tt.args.meta); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceForemanDiscoveryRuleRead() = %v, want %v", got, tt.want)
-			}
-		})
 	}
 }
 
-func Test_resourceForemanDiscoveryRuleUpdate(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		d    *schema.ResourceData
-		meta interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want diag.Diagnostics
-	}{
-		{
-			name: "Basic Test",
-			args: args{
-				ctx: context.TODO(),
-				d: schema.TestResourceDataRaw(t, resourceForemanDiscoveryRule().Schema, map[string]interface{}{
-					"name":             "test-rule",
-					"search":           "name ~ test",
-					"hostgroup_ids":    1,
-					"hostname":         "test-host",
-					"max_count":        10,
-					"priority":         1,
-					"enabled":          true,
-					"location_ids":     []int{1, 2},
-					"organization_ids": []int{1, 2},
-				}),
-				meta: &api.Client{},
-			},
-			want: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceForemanDiscoveryRuleUpdate(tt.args.ctx, tt.args.d, tt.args.meta); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceForemanDiscoveryRuleUpdate() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+// SEE: foreman_api_test.go#TestCRUDFunction_MockResponse()
+func ResourceForemanDiscoveryRuleMockResponseTestCases(t *testing.T) []TestCaseMockResponse {
 
-func Test_resourceForemanDiscoveryRuleDelete(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		d    *schema.ResourceData
-		meta interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want diag.Diagnostics
-	}{
+	obj := RandForemanDiscoveryRule()
+	s := ForemanDiscoveryRuleToInstanceState(obj)
+
+	return []TestCaseMockResponse{
+		// If the server responds with a proper read response, the operation
+		// should succeed and the ResourceData's attributes should be updated
+		// to server's response
 		{
-			name: "Basic Test",
-			args: args{
-				ctx: context.TODO(),
-				d: schema.TestResourceDataRaw(t, resourceForemanDiscoveryRule().Schema, map[string]interface{}{
-					"name":             "test-rule",
-					"search":           "name ~ test",
-					"hostgroup_ids":    1,
-					"hostname":         "test-host",
-					"max_count":        10,
-					"priority":         1,
-					"enabled":          true,
-					"location_ids":     []int{1, 2},
-					"organization_ids": []int{1, 2},
-				}),
-				meta: &api.Client{},
+			TestCase: TestCase{
+				funcName:     "resourceForemanDiscoveryRuleRead",
+				crudFunc:     resourceForemanDiscoveryRuleRead,
+				resourceData: MockForemanDiscoveryRuleResourceData(s),
 			},
-			want: nil,
+			responseFile: DiscoveryRuleTestDataPath + "/read_response.json",
+			returnError:  false,
+			expectedResourceData: MockForemanDiscoveryRuleResourceDataFromFile(
+				t,
+				DiscoveryRuleTestDataPath+"/read_response.json",
+			),
+			compareFunc: ForemanDiscoveryRuleResourceDataCompare,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceForemanDiscoveryRuleDelete(tt.args.ctx, tt.args.d, tt.args.meta); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceForemanDiscoveryRuleDelete() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+
 }

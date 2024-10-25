@@ -24,7 +24,7 @@ type ForemanDiscoveryRule struct {
 	HostLimitMaxCount int    `json:"max_count,omitempty"`
 	Priority          int    `json:"priority"`
 	Enabled           bool   `json:"enabled"`
-	LocationIds       []int  `json:",omitempty"`
+	LocationIds       []int  `json:"location_ids,omitempty"`
 	OrganizationIds   []int  `json:"organization_ids,omitempty"`
 }
 
