@@ -37,6 +37,7 @@ func ForemanDiscoveryRuleToInstanceState(obj api.ForemanDiscoveryRule) *terrafor
 	attr["priority"] = strconv.Itoa(obj.Priority)
 	attr["enabled"] = strconv.FormatBool(obj.Enabled)
 	attr["location_ids"] = intSliceToString(obj.LocationIds)
+	attr["hostgroup_ids"] = strconv.Itoa(obj.HostGroupId)
 	attr["organization_ids"] = intSliceToString(obj.OrganizationIds)
 	state.Attributes = attr
 	return &state
