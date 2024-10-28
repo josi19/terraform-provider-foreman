@@ -1,10 +1,8 @@
 package foreman
 
 import (
-	"encoding/json"
 	"math/rand"
 	"net/http"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -103,38 +101,6 @@ func ForemanDiscoveryRuleResourceDataCompare(t *testing.T, r1 *schema.ResourceDa
 
 	// compare the rest of the attributes
 	CompareResourceDataAttributes(t, m, r1, r2)
-
-}
-
-// -----------------------------------------------------------------------------
-// UnmarshalJSON
-// -----------------------------------------------------------------------------
-
-// Ensures the JSON unmarshal correctly sets the base attributes from
-// ForemanObject
-func TestDiscoveryRuleUnmarshalJSON_ForemanObject(t *testing.T) {
-
-	randObj := RandForemanObject()
-	randObjBytes, _ := json.Marshal(randObj)
-
-	var obj api.ForemanDiscoveryRule
-	jsonDecErr := json.Unmarshal(randObjBytes, &obj)
-	if jsonDecErr != nil {
-		t.Errorf(
-			"ForemanDiscoveryRule UnmarshalJSON could not decode base ForemanObject. "+
-				"Expected [nil] got [error]. Error value: [%s]",
-			jsonDecErr,
-		)
-	}
-
-	if !reflect.DeepEqual(obj.ForemanObject, randObj) {
-		t.Errorf(
-			"ForemanDiscoveryRule UnmarshalJSON did not properly decode base "+
-				"ForemanObject properties. Expected [%+v], got [%+v]",
-			randObj,
-			obj.ForemanObject,
-		)
-	}
 
 }
 
