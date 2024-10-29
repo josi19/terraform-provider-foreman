@@ -2,9 +2,7 @@ package foreman
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/HanseMerkur/terraform-provider-utils/autodoc"
 	"github.com/HanseMerkur/terraform-provider-utils/helper"
 	"github.com/HanseMerkur/terraform-provider-utils/log"
 	"github.com/terraform-coop/terraform-provider-foreman/foreman/api"
@@ -19,18 +17,10 @@ func dataSourceForemanDiscoveryRule() *schema.Resource {
 	ds := helper.DataSourceSchemaFromResourceSchema(r.Schema)
 
 	// define searchable attributes for the data source
-
-	ds["title"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		Description: fmt.Sprintf(
-			"The title is the fullname of the discoveryrule.  A "+
-				"discoveryrule's title is a path-like string from the head "+
-				"of the discoveryrule tree down to this discoveryrule.  The title will be "+
-				"in the form of: \"<parent 1>/<parent 2>/.../<name>\". "+
-				"%s \"BO1/VM/DEVP4\"",
-			autodoc.MetaExample,
-		),
+	ds["name"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The name of the Discovery Rule.",
 	}
 
 	return &schema.Resource{
@@ -43,22 +33,22 @@ func dataSourceForemanDiscoveryRule() *schema.Resource {
 }
 
 func dataSourceForemanDiscoveryRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Tracef("data_source_foreman_discoveryrule.go#Read")
+	log.Tracef("data_source_foreman_discovery_rule.go#Read")
 
 	client := meta.(*api.Client)
-	h := buildForemanDiscoveryRule(d)
+	discovery_rule := buildForemanDiscoveryRule(d)
 
-	log.Debugf("ForemanDiscoveryRule: [%+v]", h)
+	log.Debugf("ForemanDiscoveryRule: [%+v]", discovery_rule)
 
-	queryResponse, queryErr := client.QueryDiscoveryRule(ctx, h)
+	queryResponse, queryErr := client.QueryDiscoveryRule(ctx, discovery_rule)
 	if queryErr != nil {
 		return diag.FromErr(queryErr)
 	}
 
 	if queryResponse.Subtotal == 0 {
-		return diag.Errorf("Data source discoveryrule returned no results")
+		return diag.Errorf("Data source discovery_rule returned no results")
 	} else if queryResponse.Subtotal > 1 {
-		return diag.Errorf("Data source discoveryrule returned more than 1 result")
+		return diag.Errorf("Data source discovery_rule returned more than 1 result")
 	}
 
 	var queryDiscoveryRule api.ForemanDiscoveryRule
@@ -70,11 +60,11 @@ func dataSourceForemanDiscoveryRuleRead(ctx context.Context, d *schema.ResourceD
 			queryResponse.Results[0],
 		)
 	}
-	h = &queryDiscoveryRule
+	discovery_rule = &queryDiscoveryRule
 
-	log.Debugf("ForemanDiscoveryRule: [%+v]", h)
+	log.Debugf("ForemanDiscoveryRule: [%+v]", discovery_rule)
 
-	setResourceDataFromForemanDiscoveryRule(d, h)
+	setResourceDataFromForemanDiscoveryRule(d, discovery_rule)
 
 	return nil
 }

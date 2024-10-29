@@ -63,7 +63,7 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 			},
 
 			"hostgroup_ids": {
-				Type:         schema.TypeString,
+				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 				//Computed:    true,
@@ -71,7 +71,7 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 			},
 
 			"hostname": {
-				Type:         schema.TypeMap,
+				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(8, 256),
 				Description:  "Specifies the name of the new host. Can be a string or extracted via facts.",
@@ -130,77 +130,61 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 // in the resource data. Missing members will be left to the zero value for
 // that member's type.
 func buildForemanDiscoveryRule(d *schema.ResourceData) *api.ForemanDiscoveryRule {
-	log.Tracef("resource_foreman_discoveryrule.go#buildForemanDiscoveryRule")
+	log.Tracef("resource_foreman_discovery_rule.go#buildForemanDiscoveryRule")
 
-	discoveryrule := api.ForemanDiscoveryRule{}
+	discovery_rule := api.ForemanDiscoveryRule{}
 
 	obj := buildForemanObject(d)
-	discoveryrule.ForemanObject = *obj
+	discovery_rule.ForemanObject = *obj
 
 	var attr interface{}
 	var ok bool
 
 	if attr, ok = d.GetOk("name"); ok {
-		discoveryrule.Name = attr.(string)
+		discovery_rule.Name = attr.(string)
 	}
 
 	if attr, ok = d.GetOk("search"); ok {
-		discoveryrule.Search = attr.(string)
+		discovery_rule.Search = attr.(string)
 	}
 
 	if attr, ok = d.GetOk("hostgroup_ids"); ok {
-		discoveryrule.HostGroupId = attr.(int)
+		discovery_rule.HostGroupId = attr.(int)
 	}
 
 	if attr, ok = d.GetOk("hostname"); ok {
-		discoveryrule.Hostname = attr.(string)
+		discovery_rule.Hostname = attr.(string)
 	}
 
 	if attr, ok = d.GetOk("max_count"); ok {
-		discoveryrule.HostLimitMaxCount = attr.(int)
+		discovery_rule.HostLimitMaxCount = attr.(int)
 	}
 
 	if attr, ok = d.GetOk("priority"); ok {
-		discoveryrule.Priority = attr.(int)
+		discovery_rule.Priority = attr.(int)
 	}
 
 	if attr, ok = d.GetOk("enabled"); ok {
-		discoveryrule.Enabled = attr.(bool)
+		discovery_rule.Enabled = attr.(bool)
 	}
 
 	if attr, ok = d.GetOk("location_ids"); ok {
 		attrSet := attr.(*schema.Set)
-		discoveryrule.LocationIds = conv.InterfaceSliceToIntSlice(attrSet.List())
+		discovery_rule.LocationIds = conv.InterfaceSliceToIntSlice(attrSet.List())
 	}
 
 	if attr, ok = d.GetOk("organization_ids"); ok {
 		attrSet := attr.(*schema.Set)
-		discoveryrule.LocationIds = conv.InterfaceSliceToIntSlice(attrSet.List())
+		discovery_rule.OrganizationIds = conv.InterfaceSliceToIntSlice(attrSet.List())
 	}
 
-	// if attr, ok = d.GetOk("location_ids"); ok {
-	// 	attrSet := attr.(*schema.Set)
-	// 	discoveryrule.LocationIds = make([]int, attrSet.Len())
-	// 	for i, v := range attrSet.List() {
-	// 		discoveryrule.LocationIds[i] = v.(int)
-	// 	}
-	// }
-
-	// if attr, ok = d.GetOk("organization_ids"); ok {
-	// 	attrSet := attr.(*schema.Set)
-	// 	discoveryrule.OrganizationIds = make([]int, attrSet.Len())
-	// 	for i, v := range attrSet.List() {
-	// 		discoveryrule.OrganizationIds[i] = v.(int)
-	// 	}
-	// }
-
-	return &discoveryrule
+	return &discovery_rule
 }
 
 // setResourceDataFromForemanDiscoveryRule sets a ResourceData's attributes from
 // the attributes of the supplied ForemanDiscoveryRule struct
 func setResourceDataFromForemanDiscoveryRule(d *schema.ResourceData, fh *api.ForemanDiscoveryRule) {
-	log.Tracef("resource_foreman_discoveryrule.go#setResourceDataFromForemanDiscoveryRule")
+	log.Tracef("resource_foreman_discovery_rule.go#setResourceDataFromForemanDiscoveryRule")
 
 	d.SetId(strconv.Itoa(fh.Id))
 	d.Set("name", fh.Name)
@@ -219,7 +203,7 @@ func setResourceDataFromForemanDiscoveryRule(d *schema.ResourceData, fh *api.For
 // -----------------------------------------------------------------------------
 
 func resourceForemanDiscoveryRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Tracef("resource_foreman_discoveryrule.go#Create")
+	log.Tracef("resource_foreman_discovery_rule.go#Create")
 
 	client := meta.(*api.Client)
 	h := buildForemanDiscoveryRule(d)
@@ -239,7 +223,7 @@ func resourceForemanDiscoveryRuleCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceForemanDiscoveryRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Tracef("resource_foreman_discoveryrule.go#Read")
+	log.Tracef("resource_foreman_discovery_rule.go#Read")
 
 	client := meta.(*api.Client)
 	h := buildForemanDiscoveryRule(d)
@@ -259,7 +243,7 @@ func resourceForemanDiscoveryRuleRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceForemanDiscoveryRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Tracef("resource_foreman_discoveryrule.go#Update")
+	log.Tracef("resource_foreman_discovery_rule.go#Update")
 
 	client := meta.(*api.Client)
 	h := buildForemanDiscoveryRule(d)
@@ -279,7 +263,7 @@ func resourceForemanDiscoveryRuleUpdate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceForemanDiscoveryRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Tracef("resource_foreman_discoveryrule.go#Delete")
+	log.Tracef("resource_foreman_discovery_rule.go#Delete")
 
 	client := meta.(*api.Client)
 	h := buildForemanDiscoveryRule(d)

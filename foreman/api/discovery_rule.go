@@ -11,21 +11,23 @@ import (
 )
 
 const (
-	DiscoveryRuleEndpointPrefix = "discovery_rules"
+	DiscoveryRuleEndpointPrefix = "v2/discovery_rules"
 )
 
 type ForemanDiscoveryRule struct {
 	// Inherits the base object's attributes
 	ForemanObject
-	Name              string `json:"name"`
-	Search            string `json:"search,omitempty"`
-	HostGroupId       int    `json:"hostgroup_id,omitempty"`
-	Hostname          string `json:"hostname,omitempty"`
-	HostLimitMaxCount int    `json:"max_count,omitempty"`
-	Priority          int    `json:"priority"`
-	Enabled           bool   `json:"enabled"`
-	LocationIds       []int  `json:"location_ids,omitempty"`
-	OrganizationIds   []int  `json:"organization_ids,omitempty"`
+	Name                  string `json:"name"`
+	Search                string `json:"search,omitempty"`
+	HostGroupId           int    `json:"hostgroup_id,omitempty"`
+	Hostname              string `json:"hostname,omitempty"`
+	HostLimitMaxCount     int    `json:"max_count,omitempty"`
+	Priority              int    `json:"priority"`
+	Enabled               bool   `json:"enabled"`
+	LocationIds           []int  `json:"location_ids,omitempty"`
+	OrganizationIds       []int  `json:"organization_ids,omitempty"`
+	DefaultLocationId     int    `json:"location_id,omitempty"`
+	DefaultOrganizationId int    `json:"organization_id,omitempty"`
 }
 
 // -----------------------------------------------------------------------------
@@ -33,22 +35,30 @@ type ForemanDiscoveryRule struct {
 // -----------------------------------------------------------------------------
 
 func (c *Client) CreateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule) (*ForemanDiscoveryRule, error) {
-	log.Tracef("foreman/api/discoveryrule.go#Create")
+	log.Tracef("foreman/api/discovery_rule.go#Create")
 
 	reqEndpoint := fmt.Sprintf("/%s", DiscoveryRuleEndpointPrefix)
 
-	hJSONBytes, jsonEncErr := c.WrapJSONWithTaxonomy("discoveryrule", d)
+	if d.DefaultLocationId == 0 {
+		d.DefaultLocationId = c.clientConfig.LocationID
+	}
+
+	if d.DefaultOrganizationId == 0 {
+		d.DefaultOrganizationId = c.clientConfig.OrganizationID
+	}
+
+	dJSONBytes, jsonEncErr := c.WrapJSON("discovery_rule", d)
 	if jsonEncErr != nil {
 		return nil, jsonEncErr
 	}
 
-	log.Debugf("discoveryruleJSONBytes: [%s]", hJSONBytes)
+	log.Debugf("discoveryruleJSONBytes: [%s]", dJSONBytes)
 
 	req, reqErr := c.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
 		reqEndpoint,
-		bytes.NewBuffer(hJSONBytes),
+		bytes.NewBuffer(dJSONBytes),
 	)
 	if reqErr != nil {
 		return nil, reqErr
@@ -66,7 +76,7 @@ func (c *Client) CreateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 }
 
 func (c *Client) ReadDiscoveryRule(ctx context.Context, id int) (*ForemanDiscoveryRule, error) {
-	log.Tracef("foreman/api/discoveryrule.go#Read")
+	log.Tracef("foreman/api/discovery_rule.go#Read")
 
 	reqEndpoint := fmt.Sprintf("/%s/%d", DiscoveryRuleEndpointPrefix, id)
 
@@ -92,11 +102,11 @@ func (c *Client) ReadDiscoveryRule(ctx context.Context, id int) (*ForemanDiscove
 }
 
 func (c *Client) UpdateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule) (*ForemanDiscoveryRule, error) {
-	log.Tracef("foreman/api/discoveryrule.go#Update")
+	log.Tracef("foreman/api/discovery_rule.go#Update")
 
 	reqEndpoint := fmt.Sprintf("/%s/%d", DiscoveryRuleEndpointPrefix, d.Id)
 
-	discoveryruleJSONBytes, jsonEncErr := c.WrapJSONWithTaxonomy("discoveryrule", d)
+	discoveryruleJSONBytes, jsonEncErr := c.WrapJSONWithTaxonomy("discovery_rule", d)
 	if jsonEncErr != nil {
 		return nil, jsonEncErr
 	}
@@ -126,7 +136,7 @@ func (c *Client) UpdateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 
 // DeleteDiscoveryRule deletes the ForemanDiscoveryRule identified by the supplied ID
 func (c *Client) DeleteDiscoveryRule(ctx context.Context, id int) error {
-	log.Tracef("foreman/api/discoveryrule.go#Delete")
+	log.Tracef("foreman/api/discovery_rule.go#Delete")
 
 	reqEndpoint := fmt.Sprintf("/%s/%d", DiscoveryRuleEndpointPrefix, id)
 
@@ -148,7 +158,7 @@ func (c *Client) DeleteDiscoveryRule(ctx context.Context, id int) error {
 // -----------------------------------------------------------------------------
 
 func (c *Client) QueryDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule) (QueryResponse, error) {
-	log.Tracef("foreman/api/discoveryrule.go#Search")
+	log.Tracef("foreman/api/discovery_rule.go#Search")
 
 	queryResponse := QueryResponse{}
 
