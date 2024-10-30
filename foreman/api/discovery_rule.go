@@ -47,27 +47,26 @@ func (c *Client) CreateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 		d.DefaultOrganizationId = c.clientConfig.OrganizationID
 	}
 
-	dJSONBytes, jsonEncErr := c.WrapJSON("discovery_rule", d)
-	if jsonEncErr != nil {
-		return nil, jsonEncErr
+	dJSONBytes, err := c.WrapJSON("discovery_rule", d)
+	if err != nil {
+		return nil, err
 	}
 
 	log.Debugf("discoveryruleJSONBytes: [%s]", dJSONBytes)
 
-	req, reqErr := c.NewRequestWithContext(
+	req, err := c.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
 		reqEndpoint,
 		bytes.NewBuffer(dJSONBytes),
 	)
-	if reqErr != nil {
-		return nil, reqErr
+	if err != nil {
+		return nil, err
 	}
 
 	var createdDiscoveryRule ForemanDiscoveryRule
-	sendErr := c.SendAndParse(req, &createdDiscoveryRule)
-	if sendErr != nil {
-		return nil, sendErr
+	if err := c.SendAndParse(req, &createdDiscoveryRule); err != nil {
+		return nil, err
 	}
 
 	log.Debugf("createdDiscoveryRule: [%+v]", createdDiscoveryRule)
@@ -80,20 +79,19 @@ func (c *Client) ReadDiscoveryRule(ctx context.Context, id int) (*ForemanDiscove
 
 	reqEndpoint := fmt.Sprintf("/%s/%d", DiscoveryRuleEndpointPrefix, id)
 
-	req, reqErr := c.NewRequestWithContext(
+	req, err := c.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
 		reqEndpoint,
 		nil,
 	)
-	if reqErr != nil {
-		return nil, reqErr
+	if err != nil {
+		return nil, err
 	}
 
 	var readDiscoveryRule ForemanDiscoveryRule
-	sendErr := c.SendAndParse(req, &readDiscoveryRule)
-	if sendErr != nil {
-		return nil, sendErr
+	if err := c.SendAndParse(req, &readDiscoveryRule); err != nil {
+		return nil, err
 	}
 
 	log.Debugf("readDiscoveryRule: [%+v]", readDiscoveryRule)
@@ -106,27 +104,27 @@ func (c *Client) UpdateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 
 	reqEndpoint := fmt.Sprintf("/%s/%d", DiscoveryRuleEndpointPrefix, d.Id)
 
-	discoveryruleJSONBytes, jsonEncErr := c.WrapJSONWithTaxonomy("discovery_rule", d)
-	if jsonEncErr != nil {
-		return nil, jsonEncErr
+	discoveryruleJSONBytes, err := c.WrapJSONWithTaxonomy("discovery_rule", d)
+	if err != nil {
+		return nil, err
 	}
 
 	log.Debugf("discoveryruleJSONBytes: [%s]", discoveryruleJSONBytes)
 
-	req, reqErr := c.NewRequestWithContext(
+	req, err := c.NewRequestWithContext(
 		ctx,
 		http.MethodPut,
 		reqEndpoint,
 		bytes.NewBuffer(discoveryruleJSONBytes),
 	)
-	if reqErr != nil {
-		return nil, reqErr
+	if err != nil {
+		return nil, err
 	}
 
 	var updatedDiscoveryRule ForemanDiscoveryRule
-	sendErr := c.SendAndParse(req, &updatedDiscoveryRule)
-	if sendErr != nil {
-		return nil, sendErr
+
+	if err := c.SendAndParse(req, &updatedDiscoveryRule); err != nil {
+		return nil, err
 	}
 
 	log.Debugf("updatedDiscoveryRule: [%+v]", updatedDiscoveryRule)
@@ -140,14 +138,14 @@ func (c *Client) DeleteDiscoveryRule(ctx context.Context, id int) error {
 
 	reqEndpoint := fmt.Sprintf("/%s/%d", DiscoveryRuleEndpointPrefix, id)
 
-	req, reqErr := c.NewRequestWithContext(
+	req, err := c.NewRequestWithContext(
 		ctx,
 		http.MethodDelete,
 		reqEndpoint,
 		nil,
 	)
-	if reqErr != nil {
-		return reqErr
+	if err != nil {
+		return err
 	}
 
 	return c.SendAndParse(req, nil)
@@ -163,25 +161,24 @@ func (c *Client) QueryDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule
 	queryResponse := QueryResponse{}
 
 	reqEndpoint := fmt.Sprintf("/%s", DiscoveryRuleEndpointPrefix)
-	req, reqErr := c.NewRequestWithContext(
+	req, err := c.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
 		reqEndpoint,
 		nil,
 	)
-	if reqErr != nil {
-		return queryResponse, reqErr
+	if err != nil {
+		return queryResponse, err
 	}
 
 	// dynamically build the query based on the attributes
 	reqQuery := req.URL.Query()
-	name := `"` + d.Name + `"`
+	name := fmt.Sprintf(`"%s"`, d.Name)
 	reqQuery.Set("search", "name="+name)
 
 	req.URL.RawQuery = reqQuery.Encode()
-	sendErr := c.SendAndParse(req, &queryResponse)
-	if sendErr != nil {
-		return queryResponse, sendErr
+	if err := c.SendAndParse(req, &queryResponse); err != nil {
+		return queryResponse, err
 	}
 
 	log.Debugf("queryResponse: [%+v]", queryResponse)
@@ -191,14 +188,15 @@ func (c *Client) QueryDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule
 	// Encode back to JSON, then Unmarshal into []ForemanDiscoveryRule for
 	// the results
 	results := []ForemanDiscoveryRule{}
-	resultsBytes, jsonEncErr := json.Marshal(queryResponse.Results)
-	if jsonEncErr != nil {
-		return queryResponse, jsonEncErr
+	resultsBytes, err := json.Marshal(queryResponse.Results)
+	if err != nil {
+		return queryResponse, err
 	}
-	jsonDecErr := json.Unmarshal(resultsBytes, &results)
-	if jsonDecErr != nil {
-		return queryResponse, jsonDecErr
+
+	if err := json.Unmarshal(resultsBytes, &results); err != nil {
+		return queryResponse, err
 	}
+
 	// convert the search results from []ForemanDiscoveryRule to []interface
 	// and set the search results on the query
 	iArr := make([]interface{}, len(results))
