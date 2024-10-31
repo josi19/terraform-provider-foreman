@@ -222,12 +222,20 @@ func buildForemanDiscoveryRuleResponse(d *schema.ResourceData) *api.ForemanDisco
 		discovery_rule_response.Enabled = attr.(bool)
 	}
 
-	if attr, ok = d.GetOk("location_ids"); ok {
-		discovery_rule_response.LocationIds.ID = attr.(int)
+	if attr, ok = d.GetOk("locations"); ok {
+		attrSet := attr.(*schema.Set)
+		discovery_rule_response.Locations = make([]api.LocationsResponse, attrSet.Len())
+		for i, v := range attrSet.List() {
+			discovery_rule_response.Locations[i] = api.LocationsResponse{ID: v.(int)}
+		}
 	}
 
-	if attr, ok = d.GetOk("organization_ids"); ok {
-		discovery_rule_response.OrganizationIds.ID = attr.(int)
+	if attr, ok = d.GetOk("organizations"); ok {
+		attrSet := attr.(*schema.Set)
+		discovery_rule_response.Organizations = make([]api.OrganizationsResponse, attrSet.Len())
+		for i, v := range attrSet.List() {
+			discovery_rule_response.Organizations[i] = api.OrganizationsResponse{ID: v.(int)}
+		}
 	}
 
 	return &discovery_rule_response
@@ -263,8 +271,18 @@ func setResourceDataFromForemanDiscoveryRuleResponse(d *schema.ResourceData, fdr
 	d.Set("hosts_limit", fdr.HostsLimitMaxCount)
 	d.Set("priority", fdr.Priority)
 	d.Set("enabled", fdr.Enabled)
-	d.Set("location_ids", fdr.LocationIds.ID)
-	d.Set("organization_ids", fdr.OrganizationIds.ID)
+
+	locationIDs := make([]int, 0, len(fdr.Locations))
+	for _, location := range fdr.Locations {
+		locationIDs = append(locationIDs, location.ID)
+	}
+	d.Set("location_ids", locationIDs)
+
+	organizationIDs := make([]int, 0, len(fdr.Organizations))
+	for _, organization := range fdr.Organizations {
+		organizationIDs = append(organizationIDs, organization.ID)
+	}
+	d.Set("organization_ids", organizationIDs)
 }
 
 // -----------------------------------------------------------------------------

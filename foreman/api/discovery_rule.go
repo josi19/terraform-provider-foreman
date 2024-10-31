@@ -33,9 +33,9 @@ type ForemanDiscoveryRule struct {
 type ForemanDiscoveryRuleResponse struct {
 	// Inherits the base object's attributes
 	ForemanDiscoveryRule
-	HostsLimitMaxCount int                   `json:"hosts_limit,omitempty"`
-	LocationIds        OrganizationsResponse `json:"location_ids,omitempty"`
-	OrganizationIds    LocationsResponse     `json:"organization_ids,omitempty"`
+	HostsLimitMaxCount int                     `json:"hosts_limit,omitempty"`
+	Locations          []LocationsResponse     `json:"locations,omitempty"`
+	Organizations      []OrganizationsResponse `json:"organizations,omitempty"`
 }
 
 type OrganizationsResponse struct {
@@ -125,7 +125,7 @@ func (c *Client) UpdateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 
 	reqEndpoint := fmt.Sprintf("%s/%d", DiscoveryRuleEndpointPrefix, d.Id)
 
-	discoveryruleJSONBytes, err := c.WrapJSONWithTaxonomy("discovery_rule", d)
+	discoveryruleJSONBytes, err := c.WrapJSON("discovery_rule", d)
 	if err != nil {
 		return nil, err
 	}
