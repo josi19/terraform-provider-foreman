@@ -24,11 +24,8 @@ func dataSourceForemanDiscoveryRule() *schema.Resource {
 	}
 
 	return &schema.Resource{
-
 		ReadContext: dataSourceForemanDiscoveryRuleRead,
-
-		// NOTE(ALL): See comments in the corresponding resource file
-		Schema: ds,
+		Schema:      ds,
 	}
 }
 
