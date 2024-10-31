@@ -224,17 +224,17 @@ func buildForemanDiscoveryRuleResponse(d *schema.ResourceData) *api.ForemanDisco
 
 	if attr, ok = d.GetOk("locations"); ok {
 		attrSet := attr.(*schema.Set)
-		discovery_rule_response.Locations = make([]api.LocationsResponse, attrSet.Len())
+		discovery_rule_response.Locations = make([]api.EntityResponse, attrSet.Len())
 		for i, v := range attrSet.List() {
-			discovery_rule_response.Locations[i] = api.LocationsResponse{ID: v.(int)}
+			discovery_rule_response.Locations[i] = api.EntityResponse{ID: v.(int)}
 		}
 	}
 
 	if attr, ok = d.GetOk("organizations"); ok {
 		attrSet := attr.(*schema.Set)
-		discovery_rule_response.Organizations = make([]api.OrganizationsResponse, attrSet.Len())
+		discovery_rule_response.Organizations = make([]api.EntityResponse, attrSet.Len())
 		for i, v := range attrSet.List() {
-			discovery_rule_response.Organizations[i] = api.OrganizationsResponse{ID: v.(int)}
+			discovery_rule_response.Organizations[i] = api.EntityResponse{ID: v.(int)}
 		}
 	}
 

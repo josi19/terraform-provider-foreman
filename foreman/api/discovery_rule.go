@@ -15,7 +15,6 @@ const (
 )
 
 type ForemanDiscoveryRule struct {
-	// Inherits the base object's attributes
 	ForemanObject
 	Name                  string `json:"name"`
 	Search                string `json:"search,omitempty"`
@@ -31,20 +30,13 @@ type ForemanDiscoveryRule struct {
 }
 
 type ForemanDiscoveryRuleResponse struct {
-	// Inherits the base object's attributes
 	ForemanDiscoveryRule
-	HostsLimitMaxCount int                     `json:"hosts_limit,omitempty"`
-	Locations          []LocationsResponse     `json:"locations,omitempty"`
-	Organizations      []OrganizationsResponse `json:"organizations,omitempty"`
+	HostsLimitMaxCount int              `json:"hosts_limit,omitempty"`
+	Locations          []EntityResponse `json:"locations,omitempty"`
+	Organizations      []EntityResponse `json:"organizations,omitempty"`
 }
 
-type OrganizationsResponse struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Title       string `json:"title"`
-	Description any    `json:"description"`
-}
-type LocationsResponse struct {
+type EntityResponse struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Title       string `json:"title"`
