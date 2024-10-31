@@ -41,10 +41,10 @@ func dataSourceForemanDiscoveryRuleRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	if queryResponse.Subtotal == 0 {
-		return diag.Errorf("Data source discovery_rule returned no results")
+		return diag.Errorf("data source discovery_rule returned no results")
 	}
 	if queryResponse.Subtotal > 1 {
-		return diag.Errorf("Data source discovery_rule returned more than 1 result")
+		return diag.Errorf("data source discovery_rule returned more than 1 result")
 	}
 
 	var queryDiscoveryRule api.ForemanDiscoveryRule
