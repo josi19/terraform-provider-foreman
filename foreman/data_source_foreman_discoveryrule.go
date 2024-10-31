@@ -12,11 +12,9 @@ import (
 )
 
 func dataSourceForemanDiscoveryRule() *schema.Resource {
-	// copy attributes from resource definition
 	r := resourceForemanDiscoveryRule()
 	ds := helper.DataSourceSchemaFromResourceSchema(r.Schema)
 
-	// define searchable attributes for the data source
 	ds["name"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
