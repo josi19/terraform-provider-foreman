@@ -31,7 +31,7 @@ func ForemanDiscoveryRuleToInstanceState(obj api.ForemanDiscoveryRule) *terrafor
 	attr["search"] = obj.Search
 	attr["hostgroup_id"] = strconv.Itoa(obj.Id)
 	attr["hostname"] = obj.Hostname
-	attr["max_count"] = strconv.Itoa(obj.HostLimitMaxCount)
+	attr["max_count"] = strconv.Itoa(obj.HostsLimitMaxCount)
 	attr["priority"] = strconv.Itoa(obj.Priority)
 	attr["enabled"] = strconv.FormatBool(obj.Enabled)
 	attr["location_ids"] = intSliceToString(obj.LocationIds)
