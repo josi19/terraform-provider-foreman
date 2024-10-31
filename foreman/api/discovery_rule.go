@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path"
+	"strconv"
 
 	"github.com/HanseMerkur/terraform-provider-utils/log"
 )
@@ -90,8 +92,7 @@ func (c *Client) CreateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 func (c *Client) ReadDiscoveryRule(ctx context.Context, id int) (*ForemanDiscoveryRuleResponse, error) {
 	log.Tracef("foreman/api/discovery_rule.go#Read")
 
-	reqEndpoint := fmt.Sprintf("%s/%d", DiscoveryRuleEndpointPrefix, id)
-
+	reqEndpoint := path.Join(DiscoveryRuleEndpointPrefix, strconv.Itoa(id))
 	req, err := c.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
@@ -115,7 +116,7 @@ func (c *Client) ReadDiscoveryRule(ctx context.Context, id int) (*ForemanDiscove
 func (c *Client) UpdateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule) (*ForemanDiscoveryRule, error) {
 	log.Tracef("foreman/api/discovery_rule.go#Update")
 
-	reqEndpoint := fmt.Sprintf("%s/%d", DiscoveryRuleEndpointPrefix, d.Id)
+	reqEndpoint := path.Join(DiscoveryRuleEndpointPrefix, strconv.Itoa(d.Id))
 
 	discoveryruleJSONBytes, err := c.WrapJSON("discovery_rule", d)
 	if err != nil {
@@ -149,7 +150,7 @@ func (c *Client) UpdateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 func (c *Client) DeleteDiscoveryRule(ctx context.Context, id int) error {
 	log.Tracef("foreman/api/discovery_rule.go#Delete")
 
-	reqEndpoint := fmt.Sprintf("%s/%d", DiscoveryRuleEndpointPrefix, id)
+	reqEndpoint := path.Join(DiscoveryRuleEndpointPrefix, strconv.Itoa(id))
 
 	req, err := c.NewRequestWithContext(
 		ctx,
