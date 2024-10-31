@@ -48,7 +48,7 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(8, 256),
 				Description: fmt.Sprintf(
-					"DiscoveryRule name. "+
+					"Discovery Rule name. "+
 						"%s \"compute\"",
 					autodoc.MetaExample,
 				),
@@ -95,7 +95,7 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				Description: "Enables or Disables the discovery rule.",
+				Description: "Enables or disables the discovery rule.",
 			},
 
 			"location_ids": {
@@ -104,7 +104,7 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 					Type: schema.TypeInt,
 				},
 				Optional:    true,
-				Description: "List of all locations the Discovery rule can be used.",
+				Description: "List of all locations the discovery rule can be used.",
 			},
 
 			"organization_ids": {
@@ -113,7 +113,7 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 					Type: schema.TypeInt,
 				},
 				Optional:    true,
-				Description: "List of all organizations the Discovery rule can be used.",
+				Description: "List of all organizations the discovery rule can be used.",
 			},
 		},
 	}
