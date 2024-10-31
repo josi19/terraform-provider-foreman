@@ -51,7 +51,7 @@ func dataSourceForemanDiscoveryRuleRead(ctx context.Context, d *schema.ResourceD
 	var ok bool
 	if queryDiscoveryRule, ok = queryResponse.Results[0].(api.ForemanDiscoveryRule); !ok {
 		return diag.Errorf(
-			"Data source results contain unexpected type. Expected "+
+			"data source results contain unexpected type. Expected "+
 				"[api.ForemanDiscoveryRule], got [%T]",
 			queryResponse.Results[0],
 		)
