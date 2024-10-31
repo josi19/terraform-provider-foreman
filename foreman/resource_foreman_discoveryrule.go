@@ -80,7 +80,7 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntAtLeast(0),
-				Description:  "Sets the Host Limit, which defines, how many host can be provisioned wiht this rule. (0 = unlimited)",
+				Description:  "Sets the host limit, which defines, how many host can be provisioned wiht this rule. (0 = unlimited)",
 			},
 
 			"priority": {
@@ -95,7 +95,7 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				Description: "Enables or Disables the Discovery rule.",
+				Description: "Enables or Disables the discovery rule.",
 			},
 
 			"location_ids": {
@@ -179,7 +179,7 @@ func buildForemanDiscoveryRule(d *schema.ResourceData) *api.ForemanDiscoveryRule
 	return &discovery_rule
 }
 
-// buildForemanDiscoveryRule constructs a ForemanDiscoveryRule struct from a resource
+// buildForemanDiscoveryRuleResponse constructs a ForemanDiscoveryRuleResponse struct from a resource
 // data reference. The struct's members are populated from the data populated
 // in the resource data. Missing members will be left to the zero value for
 // that member's type.
