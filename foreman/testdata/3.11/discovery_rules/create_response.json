@@ -2,7 +2,7 @@
   "name": "test-discovery-rule-create-01 (create_response.json)",
   "enabled": false,
   "hostgroup_id": 1,
-  "hostgroup_name": "Dual (Legacy)",
+  "hostgroup_name": "Example HPE Servers",
   "hostname": "<%= @host.facts[nmprimary_dhcp4_option_host_name] %>",
   "priority": 111,
   "search": "name ~ create_example",

@@ -16,7 +16,7 @@
       "hostgroup_name": "HPE GreenLake/Noble",
       "hostname": "<%= @host.facts['nmprimary_dhcp4_option_host_name'] %>",
       "priority": 500,
-      "search": "facts.nine_cmdline::fdi_nine_os = noble and facts.bios_vendor = HPE",
+      "search": "facts.bios_vendor = HPE",
       "hosts_limit": 0,
       "id": 100,
       "hosts": [],
