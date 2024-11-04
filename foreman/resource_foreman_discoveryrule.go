@@ -32,15 +32,13 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 			autodoc.MetaAttribute: {
 				Type:     schema.TypeBool,
 				Computed: true,
-				Description: fmt.Sprintf(
-					"Discovery Rules are configurations within the Foreman tool that automate " +
-						"the provisioning of newly discovered hosts on your network." +
-						"They specify criteria—like hardware characteristics or network details." +
-						"When matched by a discovered host, trigger automatic actions such as assigning " +
-						"it to a host group or initiating a specific installation process." +
-						"This streamlines adding new servers by reducing manual setup." +
-						autodoc.MetaSummary,
-				),
+				Description: "Discovery Rules are configurations within the Foreman tool that automate " +
+					"the provisioning of newly discovered hosts on your network." +
+					"They specify criteria—like hardware characteristics or network details." +
+					"When matched by a discovered host, trigger automatic actions such as assigning " +
+					"it to a host group or initiating a specific installation process." +
+					"This streamlines adding new servers by reducing manual setup." +
+					autodoc.MetaSummary,
 			},
 
 			"name": {

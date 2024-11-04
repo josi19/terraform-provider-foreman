@@ -187,8 +187,7 @@ func (c *Client) QueryDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule
 
 	// dynamically build the query based on the attributes
 	reqQuery := req.URL.Query()
-	name := fmt.Sprintf(`"%s"`, d.Name)
-	reqQuery.Set("search", "name="+name)
+	reqQuery.Set("search", fmt.Sprintf("name=\"%s\"", d.Name))
 
 	req.URL.RawQuery = reqQuery.Encode()
 	if err := c.SendAndParse(req, &queryResponse); err != nil {
