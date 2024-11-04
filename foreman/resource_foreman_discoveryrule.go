@@ -117,10 +117,6 @@ func resourceForemanDiscoveryRule() *schema.Resource {
 	}
 }
 
-// -----------------------------------------------------------------------------
-// Conversion Helpers
-// -----------------------------------------------------------------------------
-
 // buildForemanDiscoveryRule constructs a ForemanDiscoveryRule struct from a resource
 // data reference. The struct's members are populated from the data populated
 // in the resource data. Missing members will be left to the zero value for
@@ -283,10 +279,7 @@ func setResourceDataFromForemanDiscoveryRuleResponse(d *schema.ResourceData, fdr
 	d.Set("organization_ids", organizationIDs)
 }
 
-// -----------------------------------------------------------------------------
-// Resource CRUD Operations
-// -----------------------------------------------------------------------------
-
+// resourceForemanDiscoveryRuleCreate creates a ForemanDiscoveryRule resource
 func resourceForemanDiscoveryRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Tracef("resource_foreman_discovery_rule.go#Create")
 
@@ -307,6 +300,7 @@ func resourceForemanDiscoveryRuleCreate(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
+// resourceForemanDiscoveryRuleRead reads a ForemanDiscoveryRule resource
 func resourceForemanDiscoveryRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Tracef("resource_foreman_discovery_rule.go#Read")
 
@@ -328,6 +322,7 @@ func resourceForemanDiscoveryRuleRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
+// resourceForemanDiscoveryRuleUpdate updates a ForemanDiscoveryRule resource
 func resourceForemanDiscoveryRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Tracef("resource_foreman_discovery_rule.go#Update")
 
@@ -348,6 +343,7 @@ func resourceForemanDiscoveryRuleUpdate(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
+// resourceForemanDiscoveryRuleDelete deletes a ForemanDiscoveryRule resource
 func resourceForemanDiscoveryRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Tracef("resource_foreman_discovery_rule.go#Delete")
 

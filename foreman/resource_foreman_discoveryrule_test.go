@@ -14,14 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-// -----------------------------------------------------------------------------
-// Test Helper Functions
-// -----------------------------------------------------------------------------
-
 const DiscoveryRuleURI = api.FOREMAN_API_URL_PREFIX + "/v2/discovery_rules"
 const DiscoveryRuleTestDataPath = "testdata/3.11/discovery_rules"
 
-// Given a ForemanDiscoveryRule, create a mock instance state reference
+// ForemanDiscoveryRuleToInstanceState creates a mock instance state reference from a ForemanDiscoveryRule object
 func ForemanDiscoveryRuleToInstanceState(obj api.ForemanDiscoveryRule) *terraform.InstanceState {
 	state := terraform.InstanceState{}
 	state.ID = strconv.Itoa(obj.Id)
@@ -41,7 +37,7 @@ func ForemanDiscoveryRuleToInstanceState(obj api.ForemanDiscoveryRule) *terrafor
 	return &state
 }
 
-// Converts a slice of integers to a comma-separated string
+// intSliceToString converts a slice of integers to a comma-separated string
 func intSliceToString(slice []int) string {
 	strSlice := make([]string, len(slice))
 	for i, v := range slice {
@@ -50,15 +46,13 @@ func intSliceToString(slice []int) string {
 	return strings.Join(strSlice, ",")
 }
 
-// Given a mock instance state for a ForemanDiscoveryRule resource, create a
-// mock ResourceData reference.
+// MockForemanDiscoveryRuleResourceData creates a mock ResourceData from InstanceState.
 func MockForemanDiscoveryRuleResourceData(s *terraform.InstanceState) *schema.ResourceData {
 	r := resourceForemanDiscoveryRule()
 	return r.Data(s)
 }
 
-// Reads the JSON for the file at the path and creates a discovery rule
-// ResourceData reference
+// MockForemanDiscoveryRuleResourceDataFromFile creates a mock ResourceData from a JSON file
 func MockForemanDiscoveryRuleResourceDataFromFile(t *testing.T, path string) *schema.ResourceData {
 	var obj api.ForemanDiscoveryRule
 	ParseJSONFile(t, path, &obj)
@@ -66,7 +60,7 @@ func MockForemanDiscoveryRuleResourceDataFromFile(t *testing.T, path string) *sc
 	return MockForemanDiscoveryRuleResourceData(s)
 }
 
-// Creates a random ForemanDiscoveryRule struct
+// RandForemanDiscoveryRule generates a random ForemanDiscoveryRule object
 func RandForemanDiscoveryRule() api.ForemanDiscoveryRule {
 	obj := api.ForemanDiscoveryRule{}
 
@@ -78,7 +72,7 @@ func RandForemanDiscoveryRule() api.ForemanDiscoveryRule {
 	return obj
 }
 
-// Compares two ResourceData references for a ForemanDiscoveryRule resource.
+// ForemanDiscoveryRuleResourceDataCompare compares two ResourceData references.
 // If the two references differ in their attributes, the test will raise
 // a fatal.
 func ForemanDiscoveryRuleResourceDataCompare(t *testing.T, r1 *schema.ResourceData, r2 *schema.ResourceData) {
@@ -104,11 +98,7 @@ func ForemanDiscoveryRuleResourceDataCompare(t *testing.T, r1 *schema.ResourceDa
 
 }
 
-// -----------------------------------------------------------------------------
-// setResourceDataFromForemanDiscoveryRule
-// -----------------------------------------------------------------------------
-
-// Ensures the ResourceData's attributes are correctly being set
+// TestSetResourceDataFromForemanDiscoveryRule ensures if ResourceData's attributes are correctly being set
 func TestSetResourceDataFromForemanDiscoveryRule_Value(t *testing.T) {
 
 	expectedObj := RandForemanDiscoveryRule()
@@ -125,10 +115,7 @@ func TestSetResourceDataFromForemanDiscoveryRule_Value(t *testing.T) {
 
 }
 
-// ----------------------------------------------------------------------------
-// Test Cases for the Unit Test Framework
-// ----------------------------------------------------------------------------
-
+// ResourceForemanDiscoveryRuleCreateTestCases Unit Test to check for correct URL and method
 // SEE: foreman_api_test.go#TestCRUDFunction_CorrectURLAndMethod()
 func ResourceForemanDiscoveryRuleCorrectURLAndMethodTestCases(t *testing.T) []TestCaseCorrectURLAndMethod {
 
@@ -155,6 +142,7 @@ func ResourceForemanDiscoveryRuleCorrectURLAndMethodTestCases(t *testing.T) []Te
 
 }
 
+// ResourceForemanDiscoveryRuleRequestDataEmptyTestCases Unit Test to check for empty request data
 // SEE: foreman_api_test.go#TestCRUDFunction_RequestDataEmpty()
 func ResourceForemanDiscoveryRuleRequestDataEmptyTestCases(t *testing.T) []TestCase {
 
@@ -187,6 +175,7 @@ func ResourceForemanDiscoveryRuleStatusCodeTestCases(t *testing.T) []TestCase {
 	}
 }
 
+// ResourceForemanDiscoveryRuleEmptyResponseTestCases Unit Test to check for empty response
 // SEE: foreman_api_test.go#TestCRUDFunction_EmptyResponseError()
 func ResourceForemanDiscoveryRuleEmptyResponseTestCases(t *testing.T) []TestCase {
 	obj := api.ForemanDiscoveryRule{}
@@ -202,6 +191,7 @@ func ResourceForemanDiscoveryRuleEmptyResponseTestCases(t *testing.T) []TestCase
 	}
 }
 
+// ResourceForemanDiscoveryRuleMockResponseTestCases Unit Test to check agains mock response
 // SEE: foreman_api_test.go#TestCRUDFunction_MockResponse()
 func ResourceForemanDiscoveryRuleMockResponseTestCases(t *testing.T) []TestCaseMockResponse {
 

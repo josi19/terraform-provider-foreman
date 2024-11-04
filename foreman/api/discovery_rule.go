@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DiscoveryRuleEndpointPrefix = "/v2/discovery_rules"
+	DiscoveryRuleEndpointPrefix = "/v2/discovery_rules/"
 )
 
 type ForemanDiscoveryRule struct {
@@ -51,14 +51,9 @@ type EntityResponse struct {
 	Description any    `json:"description"`
 }
 
-// -----------------------------------------------------------------------------
-// CRUD Implementation
-// -----------------------------------------------------------------------------
-
+// CreateDiscoveryRule creates a new ForemanDiscoveryRule
 func (c *Client) CreateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule) (*ForemanDiscoveryRule, error) {
 	log.Tracef("foreman/api/discovery_rule.go#Create")
-
-	reqEndpoint := DiscoveryRuleEndpointPrefix
 
 	if d.DefaultLocationId == 0 {
 		d.DefaultLocationId = c.clientConfig.LocationID
@@ -78,7 +73,7 @@ func (c *Client) CreateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 	req, err := c.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		reqEndpoint,
+		DiscoveryRuleEndpointPrefix,
 		bytes.NewBuffer(dJSONBytes),
 	)
 	if err != nil {
@@ -95,6 +90,7 @@ func (c *Client) CreateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRul
 	return &createdDiscoveryRule, nil
 }
 
+// ReadDiscoveryRule reads the ForemanDiscoveryRule identified by the supplied ID
 func (c *Client) ReadDiscoveryRule(ctx context.Context, id int) (*ForemanDiscoveryRuleResponse, error) {
 	log.Tracef("foreman/api/discovery_rule.go#Read")
 
@@ -119,6 +115,7 @@ func (c *Client) ReadDiscoveryRule(ctx context.Context, id int) (*ForemanDiscove
 	return &readDiscoveryRule, nil
 }
 
+// UpdateDiscoveryRule updates the ForemanDiscoveryRule identified by the supplied ForemanDiscoveryRule
 func (c *Client) UpdateDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule) (*ForemanDiscoveryRule, error) {
 	log.Tracef("foreman/api/discovery_rule.go#Update")
 
@@ -171,27 +168,22 @@ func (c *Client) DeleteDiscoveryRule(ctx context.Context, id int) error {
 	return c.SendAndParse(req, nil)
 }
 
-// -----------------------------------------------------------------------------
-// Query Implementation
-// -----------------------------------------------------------------------------
-
+// QueryDiscoveryRule queries the ForemanDiscoveryRule identified by the supplied ForemanDiscoveryRule
 func (c *Client) QueryDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule) (QueryResponse, error) {
 	log.Tracef("foreman/api/discovery_rule.go#Search")
 
 	queryResponse := QueryResponse{}
 
-	reqEndpoint := DiscoveryRuleEndpointPrefix
 	req, err := c.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
-		reqEndpoint,
+		DiscoveryRuleEndpointPrefix,
 		nil,
 	)
 	if err != nil {
 		return queryResponse, err
 	}
 
-	// dynamically build the query based on the attributes
 	reqQuery := req.URL.Query()
 	reqQuery.Set("search", fmt.Sprintf("name=\"%s\"", d.Name))
 
@@ -202,10 +194,6 @@ func (c *Client) QueryDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule
 
 	log.Debugf("queryResponse: [%+v]", queryResponse)
 
-	// Results will be Unmarshaled into a []map[string]interface{}
-	//
-	// Encode back to JSON, then Unmarshal into []ForemanDiscoveryRule for
-	// the results
 	results := []ForemanDiscoveryRule{}
 	resultsBytes, err := json.Marshal(queryResponse.Results)
 	if err != nil {
@@ -216,8 +204,6 @@ func (c *Client) QueryDiscoveryRule(ctx context.Context, d *ForemanDiscoveryRule
 		return queryResponse, err
 	}
 
-	// convert the search results from []ForemanDiscoveryRule to []interface
-	// and set the search results on the query
 	iArr := make([]interface{}, len(results))
 	for idx, val := range results {
 		iArr[idx] = val

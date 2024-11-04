@@ -19,12 +19,3 @@ resource "foreman_discovery_rule" "example_rule_01" {
   location_ids      = [1]
   organization_ids  = [1]
 }
-
-
-data "foreman_discovery_rule" "example_rule_01" {
-  name = foreman_discovery_rule.example_rule_01.name
-}
-
-output "discovery_rule_example_01" {
-  value = data.foreman_discovery_rule.example_rule_01.name
-}
