@@ -18,15 +18,6 @@ resource "foreman_discovery_rule" "example_rule_01" {
   location_ids      = [2]
   organization_ids  = [1]
 }
-
-data "foreman_discovery_rule" "example_rule_01" {
-  name = foreman_discovery_rule.nine_test_01.name
-  depends_on = [foreman_discovery_rule.nine_test_01]
-}
-
-output "discovery_rule_name" {
-  value = data.foreman_discovery_rule.example_rule_01.name
-}
 ```
 
 ## Argument Reference

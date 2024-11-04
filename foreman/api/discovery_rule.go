@@ -32,7 +32,13 @@ type ForemanDiscoveryRule struct {
 }
 
 type ForemanDiscoveryRuleResponse struct {
-	ForemanDiscoveryRule
+	ForemanObject
+	Name               string           `json:"name"`
+	Search             string           `json:"search,omitempty"`
+	HostGroupId        int              `json:"hostgroup_id,omitempty"`
+	Hostname           string           `json:"hostname,omitempty"`
+	Priority           int              `json:"priority"`
+	Enabled            bool             `json:"enabled"`
 	HostsLimitMaxCount int              `json:"hosts_limit,omitempty"`
 	Locations          []EntityResponse `json:"locations,omitempty"`
 	Organizations      []EntityResponse `json:"organizations,omitempty"`

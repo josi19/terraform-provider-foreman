@@ -18,7 +18,7 @@
       "priority": 500,
       "search": "facts.nine_cmdline::fdi_nine_os = noble and facts.bios_vendor = HPE",
       "hosts_limit": 0,
-      "id": 4,
+      "id": 100,
       "hosts": [],
       "organizations": [{ "id": 1, "name": "Default Organization" }],
       "locations": [{ "id": 2, "name": "Default Location" }]

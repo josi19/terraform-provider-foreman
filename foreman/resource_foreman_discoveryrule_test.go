@@ -18,7 +18,7 @@ import (
 // Test Helper Functions
 // -----------------------------------------------------------------------------
 
-const DiscoveryRuleURI = api.FOREMAN_API_URL_PREFIX + "/discovery_rules"
+const DiscoveryRuleURI = api.FOREMAN_API_URL_PREFIX + "/v2/discovery_rules"
 const DiscoveryRuleTestDataPath = "testdata/3.11/discovery_rules"
 
 // Given a ForemanDiscoveryRule, create a mock instance state reference

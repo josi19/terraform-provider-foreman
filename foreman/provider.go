@@ -212,7 +212,6 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"foreman_architecture":                  dataSourceForemanArchitecture(),
 			"foreman_domain":                        dataSourceForemanDomain(),
-			"foreman_discovery_rule":                dataSourceForemanDiscoveryRule(),
 			"foreman_environment":                   dataSourceForemanEnvironment(),
 			"foreman_hostgroup":                     dataSourceForemanHostgroup(),
 			"foreman_media":                         dataSourceForemanMedia(),

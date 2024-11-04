@@ -1,6 +1,6 @@
 {
   "id": 1,
-  "name": "Example Discovery Rule",
+  "name": "Example Discovery Rule (update_response.json)",
   "search": "name ~ example",
   "hostname": "example-host-1",
   "hostgroup_id": 2,
